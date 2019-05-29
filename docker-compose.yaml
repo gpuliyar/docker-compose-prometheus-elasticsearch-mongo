@@ -1,0 +1,150 @@
+version: '3.2'
+services:
+  activemq:
+    restart: 'always'
+    ports:
+    - '61616:61616'
+    - '61613:61613'
+    - '8161:8161'
+    - '9020:9020'
+    image: gpuliyar/activemq-jmx
+    container_name: activemq-jmx-container
+    networks:
+      infranet:
+        aliases:
+        - 'activemq-service'
+  mq_push_read:
+    restart: 'always'
+    image: gpuliyar/go-mq-push-read
+    container_name: mq-push-read-container
+    environment:
+    - 'ACTIVEMQ_SERVICE=activemq-service'
+    depends_on:
+    - activemq
+  elastic_search:
+    restart: 'always'
+    ports:
+    - '9200:9200'
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.0
+    container_name: elasticsearch-container
+    environment:
+    - 'discovery.type=single-node'
+    networks:
+      infranet:
+        aliases:
+        - 'elasticsearch-service'
+  es_exporter:
+    restart: 'always'
+    ports:
+    - '9108:9108'
+    image: justwatch/elasticsearch_exporter
+    container_name: es-exporter-container
+    command:
+    - '-es.uri=http://elasticsearch-service:9200'
+    depends_on:
+    - elastic_search
+    networks:
+      infranet:
+        aliases:
+        - elasticsearch-exporter-service
+  es_index:
+    restart: 'always'
+    image: gpuliyar/go-es-crud
+    container_name: es-index-container
+    environment:
+    - 'ELASTICSEARCH_SERVICE=elasticsearch-service'
+    depends_on:
+    - elastic_search
+  mongo:
+    restart: 'always'
+    ports:
+    - '27017:27017'
+    image: mongo
+    container_name: mongo-container
+    networks:
+      infranet:
+        aliases:
+        - 'mongodb-service'
+  mongo_exporter:
+    restart: 'always'
+    ports:
+    - '9001:9001'
+    image: gpuliyar/mongo-exporter
+    container_name: mongo-exporter-container
+    environment:
+    - 'MONGO_SERVICE=mongodb-service'
+    - 'MONGO_PORT=27017'
+    depends_on:
+    - mongo
+    networks:
+      infranet:
+        aliases:
+        - 'mongodb-exporter-service'
+  mongo_insert:
+    restart: 'always'
+    image: gpuliyar/go-mongo-crud
+    container_name: go-mongo-insert
+    environment:
+    - 'MONGO_SERVICE=mongodb-service'
+    depends_on:
+    - mongo
+  springboot_micrometer:
+    restart: 'always'
+    ports:
+    - '8092:8092'
+    image: gpuliyar/springboot-micrometer
+    container_name: springboot-micrometer-container
+    networks:
+      infranet:
+        aliases:
+        - springboot-micrometer-service
+  kotlin_micrometer:
+    restart: 'always'
+    ports:
+    - '8093:8093'
+    image: gpuliyar/kotlin-micrometer
+    container_name: kotlin-micrometer-container
+    networks:
+      infranet:
+        aliases:
+        - kotlin-micrometer-service
+  rest_consume:
+    restart: 'always'
+    image: gpuliyar/go-rest-consume
+    container_name: go-rest-consume-container
+    environment:
+    - 'SPRINGBOOT_APP_SERVICE=springboot-micrometer-service'
+    - 'KOTLIN_APP_SERVICE=kotlin-micrometer-service'
+    depends_on:
+    - springboot_micrometer
+    - kotlin_micrometer
+  grafana:
+    restart: 'always'
+    ports:
+    - '3000:3000'
+    image: grafana/grafana
+    container_name: grafana-container
+  prometheus:
+    restart: 'always'
+    ports:
+    - '9090:9090'
+    image: prom/prometheus
+    container_name: prometheus-container
+    command:
+    - '--config.file=/prometheus/config/prometheus.yaml'
+    - '--storage.tsdb.path=/data'
+    volumes:
+    - ./config:/prometheus/config
+    - ./data:/data
+    depends_on:
+    - activemq
+    - es_exporter
+    - mongo_exporter
+    - springboot_micrometer
+    - kotlin_micrometer
+    networks:
+      infranet:
+        aliases:
+        - 'prometheus-service'
+networks:
+  infranet:

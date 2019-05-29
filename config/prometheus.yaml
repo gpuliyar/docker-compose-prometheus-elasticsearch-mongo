@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    company: metricstream
+    monitor: rnd
+    environment: poc-environment
+    service: prometheus
+    region: local
+    dc: local
+scrape_configs:
+- job_name: prometheus
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['prometheus-service:9090']
+- job_name: activemq
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['activemq-service:9020']
+- job_name: elasticsearch
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['elasticsearch-exporter-service:9108']
+- job_name: mongodb
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['mongodb-exporter-service:9001']
+- job_name: springboot-micrometer
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['springboot-micrometer-service:8092']
+- job_name: kotlin-micrometer
+  scrape_interval: 30s
+  scrape_timeout: 30s
+  honor_labels: true
+  static_configs:
+  - targets: ['kotlin-micrometer-service:8093']

@@ -15,12 +15,6 @@ scrape_configs:
   honor_labels: true
   static_configs:
   - targets: ['prometheus-service:9090']
-- job_name: activemq
-  scrape_interval: 30s
-  scrape_timeout: 30s
-  honor_labels: true
-  static_configs:
-  - targets: ['activemq-service:9020']
 - job_name: elasticsearch
   scrape_interval: 30s
   scrape_timeout: 30s

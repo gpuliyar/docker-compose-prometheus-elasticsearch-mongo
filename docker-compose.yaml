@@ -13,14 +13,6 @@ services:
       infranet:
         aliases:
         - 'activemq-service'
-  mq_push_read:
-    restart: 'always'
-    image: gpuliyar/go-mq-push-read
-    container_name: mq-push-read-container
-    environment:
-    - 'ACTIVEMQ_SERVICE=activemq-service'
-    depends_on:
-    - activemq
   elastic_search:
     restart: 'always'
     ports:
@@ -47,14 +39,6 @@ services:
       infranet:
         aliases:
         - elasticsearch-exporter-service
-  es_index:
-    restart: 'always'
-    image: gpuliyar/go-es-crud
-    container_name: es-index-container
-    environment:
-    - 'ELASTICSEARCH_SERVICE=elasticsearch-service'
-    depends_on:
-    - elastic_search
   mongo:
     restart: 'always'
     ports:
@@ -80,44 +64,6 @@ services:
       infranet:
         aliases:
         - 'mongodb-exporter-service'
-  mongo_insert:
-    restart: 'always'
-    image: gpuliyar/go-mongo-crud
-    container_name: go-mongo-insert
-    environment:
-    - 'MONGO_SERVICE=mongodb-service'
-    depends_on:
-    - mongo
-  springboot_micrometer:
-    restart: 'always'
-    ports:
-    - '8092:8092'
-    image: gpuliyar/springboot-micrometer
-    container_name: springboot-micrometer-container
-    networks:
-      infranet:
-        aliases:
-        - springboot-micrometer-service
-  kotlin_micrometer:
-    restart: 'always'
-    ports:
-    - '8093:8093'
-    image: gpuliyar/kotlin-micrometer
-    container_name: kotlin-micrometer-container
-    networks:
-      infranet:
-        aliases:
-        - kotlin-micrometer-service
-  rest_consume:
-    restart: 'always'
-    image: gpuliyar/go-rest-consume
-    container_name: go-rest-consume-container
-    environment:
-    - 'SPRINGBOOT_APP_SERVICE=springboot-micrometer-service'
-    - 'KOTLIN_APP_SERVICE=kotlin-micrometer-service'
-    depends_on:
-    - springboot_micrometer
-    - kotlin_micrometer
   grafana:
     restart: 'always'
     ports:
@@ -140,8 +86,6 @@ services:
     - activemq
     - es_exporter
     - mongo_exporter
-    - springboot_micrometer
-    - kotlin_micrometer
     networks:
       infranet:
         aliases:

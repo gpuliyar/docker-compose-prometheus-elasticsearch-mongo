@@ -1,7 +1,11 @@
+# Stage 1
+# Download the Mongo Exporter from the Git Repository
 FROM alpine/git as git
 WORKDIR /app
 RUN git clone https://github.com/dcu/mongodb_exporter.git
 
+# Stage 2
+# Compile and build the Mongo Exporter
 FROM golang:alpine as builder
 COPY --from=git /app/ /go/src/github.com/dcu/
 RUN set -ex; \
@@ -10,6 +14,8 @@ RUN set -ex; \
     cd /go/src/github.com/dcu/mongodb_exporter; \
     make release
 
+# Stage 3
+# Bundle the final Mongo Export Container Image
 FROM alpine
 ENV MONGODB_URL "mongodb://${MONGO_SERVICE}:${MONGO_PORT}"
 RUN apk add --update ca-certificates

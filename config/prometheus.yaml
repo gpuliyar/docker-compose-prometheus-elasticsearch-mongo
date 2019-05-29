@@ -33,15 +33,3 @@ scrape_configs:
   honor_labels: true
   static_configs:
   - targets: ['mongodb-exporter-service:9001']
-- job_name: springboot-micrometer
-  scrape_interval: 30s
-  scrape_timeout: 30s
-  honor_labels: true
-  static_configs:
-  - targets: ['springboot-micrometer-service:8092']
-- job_name: kotlin-micrometer
-  scrape_interval: 30s
-  scrape_timeout: 30s
-  honor_labels: true
-  static_configs:
-  - targets: ['kotlin-micrometer-service:8093']
